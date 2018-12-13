@@ -1,5 +1,5 @@
  
-soci 手册阅读笔记
+ [soci 手册](http://soci.sourceforge.net/doc/master/) 阅读笔记，以摘抄为主
 
 # Simple SQL statements
 
