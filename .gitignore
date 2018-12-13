@@ -1,0 +1,8 @@
+Debug
+Release
+.vs
+bin
+obj
+*.VC.db
+*.VC.opendb
+/TestSOCI/data/*.db
