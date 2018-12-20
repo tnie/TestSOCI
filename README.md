@@ -1,5 +1,5 @@
  
- [soci 手册](http://soci.sourceforge.net/doc/master/) 阅读笔记，以摘抄为主
+[soci 手册](http://soci.sourceforge.net/doc/master/) 阅读笔记，以摘抄为主
 
 # Simple SQL statements
 
@@ -26,7 +26,7 @@ The problem is that in both examples, not only the statement execution is repeat
 
 prepare statement 可以结合 `vector` 批量插入 `st.execute(true)`，以及批量查询 `st.execute(false); while (st.fetch()) {}`
 
-**疑问：**不使用 prepare statement，直接上 bulk operation 对性能提升有多大帮助呢？ #TODO#
+**疑问**：不使用 prepare statement，直接上 bulk operation 对性能提升有多大帮助呢？ 
 
 # Transactions
 
@@ -57,8 +57,6 @@ prepare statement 可以结合 `vector` 批量插入 `st.execute(true)`，以及
 1. 批量入库，每批的条目超过 5 之后，入库耗时不再有明显的减少
 2. 分多次提交事务，反而会增加耗时
 
-
-
 # Data Binding
 
 - Binding output data (`into`)
@@ -88,7 +86,17 @@ prepare statement 可以结合 `vector` 批量插入 `st.execute(true)`，以及
 
 备注1：插入或更新等 sql 语句中的 `insert into person(name) values(:n)`），在 `select` 查询语句中是不存在占位符的，此时只能和列名映射！ 
 
+# Multithreading
+
+soci 不是线程安全的，虽然 soci 提供了连接池。
+
+> The simplest solution for multithreaded code is to set up a **separate** session object for each thread that needs to inteact with the database. Depending on the design of the client application this might be also the most straightforward approach.
+
 # 暂不关注的特性
+
+## FAQ
+
+[FAQ](http://soci.sourceforge.net/doc/master/faq/) 中关于操作符重载的两个问题还是值得细究的。
 
 ## Query transformation
 
@@ -98,9 +106,9 @@ prepare statement 可以结合 `vector` 批量插入 `st.execute(true)`，以及
 
 In order to support SQL NULL values and other conditions which are NOT real errors, the concept of indicator is provided.
 
-- Select with NULL values
-- Insert with NULL values
-- Bulk operations with NULL values
+- Select with `NULL` values
+- Insert with `NULL` values
+- Bulk operations with `NULL` values
 
 real errors 应该是抛异常了吧
 
