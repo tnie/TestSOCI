@@ -58,11 +58,27 @@ public:
     }
     void CreateTable()
     {
-        _session << (SQL_CREATE);
+        try
+        {
+            _session << (SQL_CREATE);
+
+        }
+        catch (const std::exception&)
+        {
+
+        }
     }
     void DropTable()
     {
-        _session << ("DROP TABLE 'Person'");
+        try
+        {
+            _session << ("DROP TABLE IF EXISTS 'Person'");
+            // _session << ("DROP TABLE 'Person'");
+        }
+        catch (const std::exception&)
+        {
+
+        }
     }
     void Put(const std::vector<Person> &);
     void Put2(const std::vector<Person> &);

@@ -29,8 +29,8 @@ int main()
     }
     PersonMgr mgr(local);
     {
-        mgr.DropTable();
-        mgr.CreateTable();
+        //mgr.DropTable();
+        //mgr.CreateTable();
         TickTick tt;
         mgr.Put(others);
     }
