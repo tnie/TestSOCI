@@ -12,7 +12,8 @@ void PersonMgr::Put(const std::vector<Person>& others)
         auto size = others.size();
         string name, id, sex;
         int age;
-        soci::statement st = (_session.prepare << (SQL_REPLACE), soci::use(name), soci::use(id), soci::use(age), soci::use(sex));
+        soci::statement st = (_session.prepare << (SQL_REPLACE), soci::use(name), soci::use(id),
+            soci::use(age), soci::use(sex));
         for (size_t i = 0; i < size; i++) {
             const auto & person = others.at(i);
             name = person.name();
@@ -20,6 +21,10 @@ void PersonMgr::Put(const std::vector<Person>& others)
             age = person.age();
             sex = person.sex() ? "M" : "F";
             st.execute(true);
+            if ((i+1) % 100000 == 0)
+            {
+                cout << "已插入 " << i+1 << "条数据" << endl;
+            }
         }
 
         tr.commit();

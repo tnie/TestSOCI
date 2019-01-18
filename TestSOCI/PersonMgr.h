@@ -3,13 +3,13 @@
 #include <vector>
 #include <chrono>
 #include <soci/soci.h>
+#include <iostream>
 using std::string;
-
-
 
 class Person
 {
 public:
+    Person() = default;
     Person(const std::string & name, const std::string & id, unsigned age, bool sex = true):
         _name(name), _id(id), _age(age), _sex(sex)
     {
@@ -61,11 +61,10 @@ public:
         try
         {
             _session << (SQL_CREATE);
-
         }
-        catch (const std::exception&)
+        catch (const std::exception& e)
         {
-
+            std::cerr << e.what() << std::endl;
         }
     }
     void DropTable()
@@ -75,16 +74,22 @@ public:
             _session << ("DROP TABLE IF EXISTS 'Person'");
             // _session << ("DROP TABLE 'Person'");
         }
-        catch (const std::exception&)
+        catch (const std::exception& e)
         {
-
+            std::cerr << e.what() << std::endl;
         }
     }
+    // transaction √ prepare  √  bulk ×
     void Put(const std::vector<Person> &);
+    // transaction × prepare √  bulk ×
     void Put2(const std::vector<Person> &);
+    // transaction √ prepare × bulk ×
     void Put3(const std::vector<Person> &);
+    // transaction √ prepare × bulk √
     void Put4(const std::vector<Person> &, size_t BULK_SIZE = 50);
+    // transaction √ prepare  √  bulk √
     void Put5(const std::vector<Person> &, size_t BULK_SIZE = 50);
+    // 试验分多次提交事务，似乎会降低效率
     void Put6(const std::vector<Person> &, size_t BULK_SIZE = 50);
 
 private:
