@@ -10,27 +10,16 @@ class Person
 {
 public:
     Person() = default;
-    Person(const std::string & name, const std::string & id, unsigned age, bool sex = true):
-        _name(name), _id(id), _age(age), _sex(sex)
+    Person(const std::string & name, const std::string & id, unsigned age, bool sex = true, double height = 0):
+        _name(name), _id(id), _age(age), _sex(sex), _height(height)
     {
 
     }
-    string name() const
-    {
-        return _name;
-    }
-    string id() const
-    {
-        return _id;
-    }
-    int age() const
-    {
-        return _age;
-    }
-    bool sex() const
-    {
-        return _sex;
-    }
+    string name() const { return _name; }
+    string id() const { return _id; }
+    int age() const { return _age; }
+    bool sex() const { return _sex; }
+    double height() const { return _height; }
     string name(const std::string & name)
     {
         string temp = std::move(_name);
@@ -42,14 +31,17 @@ private:
     std::string _id;
     int _age;
     bool _sex;
+    double _height;
 };
+
 class PersonMgr
 {
 
 private:
     const string SQL_CREATE = "CREATE TABLE IF NOT EXISTS `Person` (\
-`Name` TEXT NOT NULL , `ID` TEXT NOT NULL UNIQUE, `Age` INTEGER,`Sex` TEXT, PRIMARY KEY(`ID`))";
-    const string SQL_REPLACE = "REPLACE INTO Person( Name, ID, Age, Sex) values(:name,:id, :age, :sex)";
+`Name` TEXT NOT NULL , `ID` TEXT NOT NULL UNIQUE, `Age` INTEGER,`Sex` TEXT, `Height` REAL, PRIMARY KEY(`ID`))";
+    const string SQL_REPLACE = "REPLACE INTO Person( Name, ID, Age, Sex, Height) values(:name,:id, :age, :sex, :height)";
+    const string SQL_SELECT = "SELECT * FROM Person WHERE `Sex`=:sex limit 100";
 public:
     PersonMgr(soci::session &se):
         _session(se)
@@ -81,16 +73,10 @@ public:
     }
     // transaction √ prepare  √  bulk ×
     void Put(const std::vector<Person> &);
-    // transaction × prepare √  bulk ×
-    void Put2(const std::vector<Person> &);
-    // transaction √ prepare × bulk ×
-    void Put3(const std::vector<Person> &);
-    // transaction √ prepare × bulk √
-    void Put4(const std::vector<Person> &, size_t BULK_SIZE = 50);
     // transaction √ prepare  √  bulk √
     void Put5(const std::vector<Person> &, size_t BULK_SIZE = 50);
-    // 试验分多次提交事务，似乎会降低效率
-    void Put6(const std::vector<Person> &, size_t BULK_SIZE = 50);
+
+    std::vector<Person> Get(bool female);
 
 private:
     /*const*/ soci::session & _session;
