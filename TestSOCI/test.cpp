@@ -1,4 +1,5 @@
 #include <iostream>
+#include <thread>
 #include "PersonMgr.h"
 #include <soci/sqlite3/soci-sqlite3.h>
 #include "Utility.h"
@@ -45,10 +46,19 @@ int main()
     {
         mgr.DropTable();
         mgr.CreateTable();
-        TickTick tt;
-        mgr.Put5(others, 100);
-        tt.tick();
-        mgr.Get(true);
+        std::thread([&mgr, &others] {
+            TickTick tt;
+            mgr.Put5(others, 100);
+        }).detach();
+        // 插入的同时查询。执行未报错，但查询的结果在变化。
+        // 若要保证数据一致性，需要自行加锁！
+        for (size_t i = 0; i < 5; i++)
+        {
+            cout << "=== " << mgr.Get(true, 1000).size() << endl;
+            this_thread::sleep_for(10ms);
+        }
     }
+
+    getchar();
     return 0;
 }

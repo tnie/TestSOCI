@@ -7,14 +7,15 @@ using namespace std;
 // transaction ¡Ì prepare  ¡Ì  bulk ¡Á
 void PersonMgr::Put(const std::vector<Person>& others)
 {
+    auto size = others.size();
+    string name, id, sex;
+    int age;
+    double height;
     try
     {
+        auto sql = fmt::format(SQL_REPLACE, _table);
         soci::transaction tr(_session);
-        auto size = others.size();
-        string name, id, sex;
-        int age;
-        double height;
-        soci::statement st = (_session.prepare << (SQL_REPLACE), soci::use(name), soci::use(id),
+        soci::statement st = (_session.prepare << (sql), soci::use(name), soci::use(id),
             soci::use(age), soci::use(sex), soci::use(height));
         for (size_t i = 0; i < size; i++) {
             const auto & person = others.at(i);
@@ -45,14 +46,16 @@ void PersonMgr::Put(const std::vector<Person>& others)
 // transaction ¡Ì prepare  ¡Ì  bulk ¡Ì
 void PersonMgr::Put5(const std::vector<Person>& others, size_t BULK_SIZE /*= 50*/)
 {
+    auto size = others.size();
+    vector<string> name(BULK_SIZE), id(BULK_SIZE), sex(BULK_SIZE);
+    vector<int> age(BULK_SIZE);
+    vector<double> height(BULK_SIZE);
+
     try
     {
+        auto sql = fmt::format(SQL_REPLACE, _table);
         soci::transaction tr(_session);
-        auto size = others.size();
-        vector<string> name(BULK_SIZE), id(BULK_SIZE), sex(BULK_SIZE);
-        vector<int> age(BULK_SIZE);
-        vector<double> height(BULK_SIZE);
-        soci::statement st = (_session.prepare << (SQL_REPLACE), soci::use(name), soci::use(id), soci::use(age),
+        soci::statement st = (_session.prepare << (sql), soci::use(name), soci::use(id), soci::use(age),
             soci::use(sex), soci::use(height));
         for (size_t i = 0, j = 0; i < size; i++, j++) {
             const auto & person = others.at(i);
@@ -80,14 +83,18 @@ void PersonMgr::Put5(const std::vector<Person>& others, size_t BULK_SIZE /*= 50*
     }
 }
 
-std::vector<Person> PersonMgr::Get(bool female)
+std::vector<Person> PersonMgr::Get(bool female, unsigned limit)
 {
+    std::vector<Person> ps;
+    ps.reserve(limit);
     try
     {
-        soci::rowset<soci::row> rs = (_session.prepare << (SQL_SELECT), soci::use(female ? 'F' : 'M'));
+        auto sql = fmt::format(SQL_SELECT, _table, limit);
+        soci::rowset<soci::row> rs = (_session.prepare << (sql), soci::use(female ? 'F' : 'M'));
         for (auto it = rs.begin(); it != rs.end(); ++it)
         {
             const soci::row& row = *it;
+#ifdef __PRINT_PROP_
             for (size_t i = 0; i < row.size(); i++)
             {
                 auto & props = row.get_properties(i);
@@ -100,15 +107,6 @@ std::vector<Person> PersonMgr::Get(bool female)
                 case soci::dt_double:
                     cout << row.get<double>(i) << "[dt_double]";
                     break;
-                case soci::dt_integer:
-                    cout << row.get<int>(i) << "[dt_integer]";
-                    break;
-                case soci::dt_long_long:
-                    cout << row.get<long long>(i) << "[dt_long_long]";
-                    break;
-                case soci::dt_unsigned_long_long:
-                    cout << row.get<unsigned long long>(i) << "[dt_unsigned_long_long]";
-                    break;
                 case soci::dt_date:
                     std::tm when = row.get<std::tm>(i);
                     cout << when.tm_year << "[dt_date]";
@@ -117,11 +115,12 @@ std::vector<Person> PersonMgr::Get(bool female)
 
                 cout << "</" << props.get_name() << '>' << std::endl;
             }
-            cout << endl;
             std::this_thread::sleep_for(1s);
+#endif // __PRINT_PROP_
+            ps.push_back(Person(row.get<string>(string("Name"))));
 
             // WEIRD <Height>1.86[dt_string]</Height>
-            auto height = row.get<double>(string("Height"));    // bad cast
+            //auto height = row.get<double>(string("Height"));    // bad cast
         }
     }
     catch (soci::soci_error const &e)
@@ -132,7 +131,7 @@ std::vector<Person> PersonMgr::Get(bool female)
     {
         cerr << e.what() << endl;
     }
-    return std::vector<Person>();
+    return ps;
 }
 
 

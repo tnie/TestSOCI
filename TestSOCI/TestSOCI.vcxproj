@@ -87,9 +87,9 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;FMT_HEADER_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>E:\YDDC\StockDataLayer\3rd\soci-3.2.3\include;E:\YDDC\StockDataLayer\3rd\soci-3.2.3\include\soci;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\YDDC\StockDataLayer\3rd\soci-3.2.3\include;E:\YDDC\StockDataLayer\3rd\soci-3.2.3\include\soci;E:\YDDC\StockDataLayer\3rd\spdlog\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
