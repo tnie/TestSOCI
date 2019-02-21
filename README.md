@@ -70,7 +70,7 @@ prepare statement 可以结合 `vector` 批量插入 `st.execute(true)`，以及
 	约定 the order of "holes" in the SQL statement and the order of `into` and `use` expression should match.
 
 	此时 sql 语句中可以不命名，使用 "?" 即可 `sql << "insert into person(id, firstname, lastname) values(?, ?, ?)"`
-- Binding by name
+- [Binding by name](http://soci.sourceforge.net/doc/master/binding/#binding-by-name)
 
 	小惊喜 bind the same local data to many "holes" at the same time
 

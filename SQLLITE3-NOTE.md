@@ -33,6 +33,7 @@ sqlite3 数据库可以并发读，但不可以并发写 —— 这个和常理�
 
 https://stackoverflow.com/questions/10325683/can-i-read-and-write-to-a-sqlite-database-concurrently-from-multiple-connections
 
+[sqlite 并发访问](http://blog.51cto.com/linzimo777/1544202)
 
 [1]:https://github.com/tnie/StockDataLayer/issues/41
 [2]:https://www.sqlite.org/datatype3.html
