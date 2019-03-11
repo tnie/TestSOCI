@@ -50,6 +50,11 @@ public:
     {
 
     }
+    /*PersonMgr(soci::session &&se, std::string table = "Person") :
+        _session(std::move(se)), _table(std::move(table))
+    {
+        static_assert(std::is_move_constructible<soci::session>::value, "hah");
+    }*/
     void CreateTable()
     {
         try

@@ -63,7 +63,7 @@ prepare statement 可以结合 `vector` 批量插入 `st.execute(true)`，以及
 	sqlite3_statement_backend::prepare: near "葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺": syntax error PersonMgr::Get:128	// 2
 	```
 	```
-	sqlite3_statement_backend::loadRS: NOT NULL constraint(约束) failed: Person.ID
+	sqlite3_statement_backend::loadRS: NOT NULL constraint(约束) failed: Person.ID PersonMgr::Get:128
 	```
 	```
 	Failure to bind on bulk operations PersonMgr::Put5:78

@@ -32,16 +32,23 @@ int main()
 {
     const int _MAX_COUNT = 1000 * 50;
     auto others = data(_MAX_COUNT);
-    soci::session local;
+    const unsigned _POOL_SIZE = 50;
+    soci::connection_pool pool(_POOL_SIZE);
     try
     {
-        local.open(soci::sqlite3, u8R"(.\data\22#.db)");
+        for (size_t i = 0; i < _POOL_SIZE; i++)
+        {
+            auto & local = pool.at(i);
+            local.open(soci::sqlite3, u8R"(.\data\22#.db)");
+        }
+
     }
     catch (const std::exception& e)
     {
         spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
     }
-    PersonMgr mgr(local);
+    //PersonMgr mgr(soci::session(pool)); // ERR
+    PersonMgr mgr{ soci::session(pool) };
     {
         mgr.DropTable();
         mgr.CreateTable();
@@ -53,8 +60,9 @@ int main()
         // 若要保证数据一致性，需要自行加锁！
         for (size_t i = 0; i < 50; i++)
         {
-            std::thread([&mgr, i] {
-                spdlog::info("===#{} {}", i, mgr.Get(true, 1000).size());
+            std::thread([&pool, i] {
+                soci::session tmp(pool);
+                spdlog::info("===#{} {}", i, PersonMgr(tmp).Get(true, 1000).size());
             }).detach();
             //this_thread::sleep_for(10ms);
         }
