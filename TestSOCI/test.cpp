@@ -48,7 +48,7 @@ int main()
         std::thread([&mgr, &others] {
             TickTick tt;
             mgr.Put5(others, 100);
-        }).detach();
+        }).join();
 
         // 若要保证数据一致性，需要自行加锁！
         for (size_t i = 0; i < 50; i++)

@@ -60,7 +60,7 @@ prepare statement 可以结合 `vector` 批量插入 `st.execute(true)`，以及
 4. 同一 session，并发读写可能抛出以下异常或直接崩溃（`iosfwd` 文件或 `delete_scalar.cpp:17` 文件）。即便执行未报错，但查询的结果一直在变化也是无意义的。
 
 	```
-	sqlite3_statement_backend::prepare: near "葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺": syntax error PersonMgr::Get:128
+	sqlite3_statement_backend::prepare: near "葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺": syntax error PersonMgr::Get:128	// 2
 	```
 	```
 	sqlite3_statement_backend::loadRS: NOT NULL constraint(约束) failed: Person.ID
@@ -69,13 +69,19 @@ prepare statement 可以结合 `vector` 批量插入 `st.execute(true)`，以及
 	Failure to bind on bulk operations PersonMgr::Put5:78
 	```
 	```
-	No sqlite statement created PersonMgr::Get:128
+	No sqlite statement created PersonMgr::Get:128	// 1
 	```
 	```
 	[error] No sqlite statement created PersonMgr::Get:128
 	[error] sqlite3_statement_backend::prepare: near "葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺": syntax error PersonMgr::Get:128
 	[error] sqlite3_statement_backend::prepare: another row available PersonMgr::Get:128
 	[error] sqlite3_statement_backend::prepare: another row available PersonMgr::Get:128
+	```
+
+5. 同一 session，并发查询除了出现过以上 1、2 异常外，还出现过以下异常
+
+	```
+	sqlite3_statement_backend::prepare: unrecognized token: "1000SELECT" PersonMgr::Get:128
 	```
 
 # Data Binding
