@@ -56,6 +56,27 @@ prepare statement 可以结合 `vector` 批量插入 `st.execute(true)`，以及
 其他试验结论：
 1. 批量入库，每批的条目超过 5 之后，入库耗时不再有明显的减少
 2. 分多次提交事务，反而会增加耗时
+3. 同一 session，并发写入（若使用事务）抛出异常“Cannot begin transaction. cannot start a transaction within a transaction”
+4. 同一 session，并发读写可能抛出以下异常或直接崩溃（`iosfwd` 文件或 `delete_scalar.cpp:17` 文件）。即便执行未报错，但查询的结果一直在变化也是无意义的。
+
+	```
+	sqlite3_statement_backend::prepare: near "葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺": syntax error PersonMgr::Get:128
+	```
+	```
+	sqlite3_statement_backend::loadRS: NOT NULL constraint(约束) failed: Person.ID
+	```
+	```
+	Failure to bind on bulk operations PersonMgr::Put5:78
+	```
+	```
+	No sqlite statement created PersonMgr::Get:128
+	```
+	```
+	[error] No sqlite statement created PersonMgr::Get:128
+	[error] sqlite3_statement_backend::prepare: near "葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺": syntax error PersonMgr::Get:128
+	[error] sqlite3_statement_backend::prepare: another row available PersonMgr::Get:128
+	[error] sqlite3_statement_backend::prepare: another row available PersonMgr::Get:128
+	```
 
 # Data Binding
 

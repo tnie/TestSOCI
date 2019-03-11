@@ -1,4 +1,3 @@
-#include <iostream>
 #include <thread>
 #include "PersonMgr.h"
 #include <soci/sqlite3/soci-sqlite3.h>
@@ -7,7 +6,7 @@
 
 using namespace std;
 
-vector<Person> data(int count)
+vector<Person> data(size_t count)
 {
     vector<Person> others;
     others.reserve(count);     // 增加这一句，可以显著提高 vector 的插入效率
@@ -23,7 +22,7 @@ vector<Person> data(int count)
         others.emplace_back(name, uuid(), dis1(random), dis2(random), height);
         if ((i + 1) % 100000 == 0)
         {
-            cout << "已生成 " << i + 1 << "条数据" << endl;
+            spdlog::info("已经生成 {} 条数据", i + 1);
         }
     }
     return others;
@@ -40,7 +39,7 @@ int main()
     }
     catch (const std::exception& e)
     {
-        cerr << e.what() << endl;
+        spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
     }
     PersonMgr mgr(local);
     {
@@ -50,12 +49,14 @@ int main()
             TickTick tt;
             mgr.Put5(others, 100);
         }).detach();
-        // 插入的同时查询。执行未报错，但查询的结果在变化。
+
         // 若要保证数据一致性，需要自行加锁！
-        for (size_t i = 0; i < 5; i++)
+        for (size_t i = 0; i < 50; i++)
         {
-            cout << "=== " << mgr.Get(true, 1000).size() << endl;
-            this_thread::sleep_for(10ms);
+            std::thread([&mgr, i] {
+                spdlog::info("===#{} {}", i, mgr.Get(true, 1000).size());
+            }).detach();
+            //this_thread::sleep_for(10ms);
         }
     }
 
