@@ -63,7 +63,7 @@ prepare statement 可以结合 `vector` 批量插入 `st.execute(true)`，以及
 	sqlite3_statement_backend::prepare: near "葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺葺": syntax error PersonMgr::Get:128	// 2
 	```
 	```
-	sqlite3_statement_backend::loadRS: NOT NULL constraint(约束) failed: Person.ID PersonMgr::Get:128
+	sqlite3_statement_backend::loadRS: NOT NULL constraint(约束) failed: Person.ID PersonMgr::Get:128	// 3
 	```
 	```
 	Failure to bind on bulk operations PersonMgr::Put5:78
@@ -82,6 +82,15 @@ prepare statement 可以结合 `vector` 批量插入 `st.execute(true)`，以及
 
 	```
 	sqlite3_statement_backend::prepare: unrecognized token: "1000SELECT" PersonMgr::Get:128
+	```
+
+6. 并发读写（各自使用不同的 session）除了抛出以上 1、3 异常外，还出现过以下异常
+	```
+	 [error] sqlite3_statement_backend::prepare: near "SREPLACE": syntax error PersonMgr::Get:128
+	 [error] sqlite3_statement_backend::prepare: near "SREPLACE": syntax error PersonMgr::Put5:78
+	```
+	```
+	[error] sqlite3_statement_backend::prepare: database is locked PersonMgr::Get:128
 	```
 
 # Data Binding

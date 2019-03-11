@@ -47,27 +47,35 @@ int main()
     {
         spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
     }
+    vector<thread> vt;
     //PersonMgr mgr(soci::session(pool)); // ERR
     PersonMgr mgr{ soci::session(pool) };
     {
         mgr.DropTable();
         mgr.CreateTable();
-        std::thread([&mgr, &others] {
+        vt.emplace_back([&mgr, &others] {
             TickTick tt;
             mgr.Put5(others, 100);
-        }).join();
+        });
 
         // 若要保证数据一致性，需要自行加锁！
         for (size_t i = 0; i < 50; i++)
         {
-            std::thread([&pool, i] {
+            vt.emplace_back([&pool, i] {
                 soci::session tmp(pool);
                 spdlog::info("===#{} {}", i, PersonMgr(tmp).Get(true, 1000).size());
-            }).detach();
-            //this_thread::sleep_for(10ms);
+            });
+            this_thread::sleep_for(100ms);
         }
     }
 
     getchar();
+    for (size_t i = 0; i < vt.size(); i++)
+    {
+        if (vt.at(i).joinable())
+        {
+            vt.at(i).join();
+        }
+    }
     return 0;
 }
