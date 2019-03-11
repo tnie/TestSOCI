@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include "spdlog/spdlog.h"
 #if WIN32
 #include <objbase.h>
 #endif
@@ -16,12 +17,12 @@ public:
     ~TickTick()
     {
         auto t2 = std::chrono::steady_clock::now();
-        std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - tn).count() << " milliseconds" << std::endl;
+        spdlog::info("{} milliseconds", std::chrono::duration_cast<std::chrono::milliseconds>(t2 - tn).count());
     }
     void tick()
     {
         auto t2 = std::chrono::steady_clock::now();
-        std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - tn).count() << " milliseconds" << std::endl;
+        spdlog::info("{} milliseconds", std::chrono::duration_cast<std::chrono::milliseconds>(t2 - tn).count());
         tn = t2;
     }
 private:
@@ -60,7 +61,8 @@ static std::string uuid()
         );
         return buf;
     }
+#else
+    static_assert(false, "Not implemented in platform other than windows");
 #endif
-    assert(false);
     return std::string();
 }

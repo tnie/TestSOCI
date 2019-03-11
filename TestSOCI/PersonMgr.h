@@ -4,7 +4,7 @@
 #include <chrono>
 #include <soci/soci.h>
 #include <iostream>
-#include "fmt\bundled\format.h"
+#include "spdlog/spdlog.h"
 using std::string;
 
 class Person
@@ -59,7 +59,7 @@ public:
         }
         catch (const std::exception& e)
         {
-            std::cerr << e.what() << std::endl;
+            spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
         }
     }
     void DropTable()
@@ -71,7 +71,7 @@ public:
         }
         catch (const std::exception& e)
         {
-            std::cerr << e.what() << std::endl;
+            spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
         }
     }
     // transaction ¡Ì prepare  ¡Ì  bulk ¡Á

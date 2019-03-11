@@ -27,7 +27,7 @@ void PersonMgr::Put(const std::vector<Person>& others)
             st.execute(true);
             if ((i+1) % 100000 == 0)
             {
-                cout << "已插入 " << i+1 << "条数据" << endl;
+                spdlog::info("已插入 {} 条数据", i + 1);
             }
         }
 
@@ -35,11 +35,11 @@ void PersonMgr::Put(const std::vector<Person>& others)
     }
     catch (soci::soci_error const &e)
     {
-        cerr << e.what() << endl;
+        spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
     }
     catch (std::exception const & e)
     {
-        cerr << e.what() << endl;
+        spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
     }
 }
 
@@ -75,11 +75,11 @@ void PersonMgr::Put5(const std::vector<Person>& others, size_t BULK_SIZE /*= 50*
     }
     catch (soci::soci_error const &e)
     {
-        cerr << e.what() << endl;
+        spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
     }
     catch (std::exception const & e)
     {
-        cerr << e.what() << endl;
+        spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
     }
 }
 
@@ -125,11 +125,11 @@ std::vector<Person> PersonMgr::Get(bool female, unsigned limit)
     }
     catch (soci::soci_error const &e)
     {
-        cerr << e.what() << endl;
+        spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
     }
     catch (const std::exception& e)
     {
-        cerr << e.what() << endl;
+        spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
     }
     return ps;
 }
