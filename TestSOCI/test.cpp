@@ -51,9 +51,13 @@ int main()
     vector<thread> vt;
     //PersonMgr mgr(soci::session(pool)); // ERR
     PersonMgr mgr{ ppool };
+    PersonMgr mgr2{ ppool, "Student" };
     {
         mgr.DropTable();
+        mgr2.DropTable();
         mgr.CreateTable();
+        mgr2.CreateTable();
+        mgr2.Put5(others, 100);
         vt.emplace_back([&mgr, &others] {
             TickTick tt;
             mgr.Put5(others, 100);
@@ -62,10 +66,12 @@ int main()
         // 若要保证数据一致性，需要自行加锁！
         for (size_t i = 0; i < 50; i++)
         {
-            vt.emplace_back([i, &mgr] {
-                spdlog::info("===#{} {}", i, mgr.Get(true, 1000).size());
+            vt.emplace_back([i, &mgr, &mgr2] {
+                //spdlog::info("===#{} {}", i, mgr.Get(true, 1000).size());
+                spdlog::info("===#{} {}", i, mgr2.Get(true, 1000).size());
             });
             this_thread::sleep_for(100ms);
+
         }
     }
 
