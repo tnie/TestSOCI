@@ -56,6 +56,44 @@ prepare statement 可以结合 `vector` 批量插入 `st.execute(true)`，以及
 其他试验结论：
 1. 批量入库，每批的条目超过 5 之后，入库耗时不再有明显的减少
 2. 分多次提交事务，反而会增加耗时
+
+# Data Binding
+
+- Binding output data (`into`)
+- Binding input data (`use`)
+
+	需要注意的是 `use` 函数里的参数的生命周期，切记不能将函数返回值作为 `use` 函数的参数
+
+当有多个参数需要绑定时，有两种选择：
+- Binding by position
+
+	约定 the order of "holes" in the SQL statement and the order of `into` and `use` expression should match.
+
+	此时 sql 语句中可以不命名，使用 "?" 即可 `sql << "insert into person(id, firstname, lastname) values(?, ?, ?)"`
+- [Binding by name](http://soci.sourceforge.net/doc/master/binding/#binding-by-name)
+
+	小惊喜 bind the same local data to many "holes" at the same time
+
+除了绑定基本类型，也可以绑定 ~~STL 容器~~ `std::vector`（Bulk operations）以及支持 ORM（object-relational mapping）
+
+1. 只支持 vector 容器，而且只支持基本类型（数值类型、`std::string`、`std::tm`）和做了 ORM 的对象。`soci::blob` 类型不能在容器中使用。细节见 [Static binding for bulk operations][1]
+2. 也可以绑定 User-defined C++ types，但需要给定自定义类型与 soci 支持的基本类型之间的转换规则。通过特例化 `type_conversion<> `模板并实现 `from_base` `to_base` 两个静态成员实现。
+3. ORM 只是用户自定义类型的特例。自定义类型只是把工作换个地方做，感觉和 Query transformation 同属鸡肋
+
+[Object-Relational Mapping][2] 提到 mapping 存在于自定义类型和 table columns 之间。[C++数据库操作之SOCI][3] 里面描述
+
+> 占位符的名字不一定要和数据库 column 名一致，但后续操作中 `values` 语法<sup>1</sup>里的占位符必需和这里指定的一致。
+
+备注1：插入或更新等 sql 语句中的 `insert into person(name) values(:n)`），在 `select` 查询语句中是不存在占位符的，此时只能和列名映射！ 
+
+# Multithreading
+
+soci 不是线程安全的，虽然 soci 提供了连接池。
+
+> The simplest solution for multithreaded code is to set up a **separate** session object for each thread that needs to inteact with the database. Depending on the design of the client application this might be also the most straightforward approach.
+
+试验结论：
+
 3. 同一 session，并发写入（若使用事务）抛出异常“Cannot begin transaction. cannot start a transaction within a transaction”
 4. 同一 session，并发读写可能抛出以下异常或直接崩溃（`iosfwd` 文件或 `delete_scalar.cpp:17` 文件）。即便执行未报错，但查询的结果一直在变化也是无意义的。
 
@@ -93,40 +131,6 @@ prepare statement 可以结合 `vector` 批量插入 `st.execute(true)`，以及
 	[error] sqlite3_statement_backend::prepare: database is locked PersonMgr::Get:128
 	```
 
-# Data Binding
-
-- Binding output data (`into`)
-- Binding input data (`use`)
-
-	需要注意的是 `use` 函数里的参数的生命周期，切记不能将函数返回值作为 `use` 函数的参数
-
-当有多个参数需要绑定时，有两种选择：
-- Binding by position
-
-	约定 the order of "holes" in the SQL statement and the order of `into` and `use` expression should match.
-
-	此时 sql 语句中可以不命名，使用 "?" 即可 `sql << "insert into person(id, firstname, lastname) values(?, ?, ?)"`
-- [Binding by name](http://soci.sourceforge.net/doc/master/binding/#binding-by-name)
-
-	小惊喜 bind the same local data to many "holes" at the same time
-
-除了绑定基本类型，也可以绑定 ~~STL 容器~~ `std::vector`（Bulk operations）以及支持 ORM（object-relational mapping）
-
-1. 只支持 vector 容器，而且只支持基本类型（数值类型、`std::string`、`std::tm`）和做了 ORM 的对象。`soci::blob` 类型不能在容器中使用。细节见 [Static binding for bulk operations][1]
-2. 也可以绑定 User-defined C++ types，但需要给定自定义类型与 soci 支持的基本类型之间的转换规则。通过特例化 `type_conversion<> `模板并实现 `from_base` `to_base` 两个静态成员实现。
-3. ORM 只是用户自定义类型的特例。自定义类型只是把工作换个地方做，感觉和 Query transformation 同属鸡肋
-
-[Object-Relational Mapping][2] 提到 mapping 存在于自定义类型和 table columns 之间。[C++数据库操作之SOCI][3] 里面描述
-
-> 占位符的名字不一定要和数据库 column 名一致，但后续操作中 `values` 语法<sup>1</sup>里的占位符必需和这里指定的一致。
-
-备注1：插入或更新等 sql 语句中的 `insert into person(name) values(:n)`），在 `select` 查询语句中是不存在占位符的，此时只能和列名映射！ 
-
-# Multithreading
-
-soci 不是线程安全的，虽然 soci 提供了连接池。
-
-> The simplest solution for multithreaded code is to set up a **separate** session object for each thread that needs to inteact with the database. Depending on the design of the client application this might be also the most straightforward approach.
 
 # 暂不关注的特性
 
