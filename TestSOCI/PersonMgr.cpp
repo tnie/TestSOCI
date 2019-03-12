@@ -14,6 +14,8 @@ void PersonMgr::Put(const std::vector<Person>& others)
     try
     {
         auto sql = fmt::format(SQL_REPLACE, _table);
+        wrt_lock_t wl(_shmt);
+        auto & _session = soci::session(*_ppool);
         soci::transaction tr(_session);
         soci::statement st = (_session.prepare << (sql), soci::use(name), soci::use(id),
             soci::use(age), soci::use(sex), soci::use(height));
@@ -54,6 +56,8 @@ void PersonMgr::Put5(const std::vector<Person>& others, size_t BULK_SIZE /*= 50*
     try
     {
         auto sql = fmt::format(SQL_REPLACE, _table);
+        wrt_lock_t wl(_shmt);
+        auto & _session = soci::session(*_ppool);
         soci::transaction tr(_session);
         soci::statement st = (_session.prepare << (sql), soci::use(name), soci::use(id), soci::use(age),
             soci::use(sex), soci::use(height));
@@ -90,6 +94,8 @@ std::vector<Person> PersonMgr::Get(bool female, unsigned limit)
     try
     {
         auto sql = fmt::format(SQL_SELECT, _table, limit);
+        read_lock_t rl(_shmt);
+        auto & _session = soci::session(*_ppool);
         soci::rowset<soci::row> rs = (_session.prepare << (sql), soci::use(female ? 'F' : 'M'));
         for (auto it = rs.begin(); it != rs.end(); ++it)
         {

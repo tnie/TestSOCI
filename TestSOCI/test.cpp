@@ -33,12 +33,13 @@ int main()
     const int _MAX_COUNT = 1000 * 50;
     auto others = data(_MAX_COUNT);
     const unsigned _POOL_SIZE = 50;
-    soci::connection_pool pool(_POOL_SIZE);
+    auto ppool = std::make_shared<soci::connection_pool>(_POOL_SIZE);
+    static_assert( std::is_move_constructible<soci::connection_pool>::value, "");
     try
     {
         for (size_t i = 0; i < _POOL_SIZE; i++)
         {
-            auto & local = pool.at(i);
+            auto & local = ppool->at(i);
             local.open(soci::sqlite3, u8R"(.\data\22#.db)");
         }
 
@@ -49,7 +50,7 @@ int main()
     }
     vector<thread> vt;
     //PersonMgr mgr(soci::session(pool)); // ERR
-    PersonMgr mgr{ soci::session(pool) };
+    PersonMgr mgr{ ppool };
     {
         mgr.DropTable();
         mgr.CreateTable();
@@ -61,9 +62,8 @@ int main()
         // 若要保证数据一致性，需要自行加锁！
         for (size_t i = 0; i < 50; i++)
         {
-            vt.emplace_back([&pool, i] {
-                soci::session tmp(pool);
-                spdlog::info("===#{} {}", i, PersonMgr(tmp).Get(true, 1000).size());
+            vt.emplace_back([i, &mgr] {
+                spdlog::info("===#{} {}", i, mgr.Get(true, 1000).size());
             });
             this_thread::sleep_for(100ms);
         }

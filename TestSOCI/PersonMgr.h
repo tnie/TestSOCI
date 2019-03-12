@@ -1,7 +1,9 @@
 #pragma once
+#include <shared_mutex>
 #include <string>
 #include <vector>
 #include <chrono>
+#include <memory>
 #include <soci/soci.h>
 #include <iostream>
 #include "spdlog/spdlog.h"
@@ -45,10 +47,10 @@ private:
     const string SQL_REPLACE = "REPLACE INTO {} ( Name, ID, Age, Sex, Height) values(:name,:id, :age, :sex, :height)";
     const string SQL_SELECT = "SELECT * FROM {} WHERE `Sex`=:sex limit {}";
 public:
-    PersonMgr(soci::session &se, std::string table = "Person"):
-        _session(se), _table(std::move(table))
+    PersonMgr(std::shared_ptr<soci::connection_pool> ppool, std::string table = "Person"):
+        _ppool(ppool), _table(std::move(table))
     {
-
+        ppool->at(4);   // 连接池至少分配五个会话
     }
     /*PersonMgr(soci::session &&se, std::string table = "Person") :
         _session(std::move(se)), _table(std::move(table))
@@ -59,8 +61,9 @@ public:
     {
         try
         {
+            wrt_lock_t wl(_shmt);
             auto sql = fmt::format(SQL_CREATE, _table);
-            _session << (sql);
+            soci::session(*_ppool) << (sql);
         }
         catch (const std::exception& e)
         {
@@ -71,7 +74,8 @@ public:
     {
         try
         {
-            _session << ("DROP TABLE IF EXISTS " + _table);
+            wrt_lock_t wl(_shmt);
+            soci::session(*_ppool) << ("DROP TABLE IF EXISTS " + _table);
             // _session << ("DROP TABLE 'Person'");
         }
         catch (const std::exception& e)
@@ -86,7 +90,11 @@ public:
 
     std::vector<Person> Get(bool female, unsigned limit = 3);
 
+    typedef std::unique_lock<std::shared_mutex> wrt_lock_t;
+    typedef std::shared_lock<std::shared_mutex> read_lock_t;
+
 private:
-    /*const*/ soci::session & _session;
+    std::shared_ptr<soci::connection_pool> _ppool;
+    std::shared_mutex _shmt;    // 针对表？还是针对库（连接池）？
     const std::string _table;
 };
