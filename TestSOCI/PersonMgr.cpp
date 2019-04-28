@@ -4,6 +4,52 @@
 
 using namespace std;
 
+namespace
+{
+    const string SQL_CREATE = "CREATE TABLE IF NOT EXISTS {} (\
+`Name` TEXT NOT NULL , `ID` TEXT NOT NULL UNIQUE, `Age` INTEGER,`Sex` TEXT,\
+ `Height` REAL NOT NULL, `Comments` BLOB,  PRIMARY KEY(`ID`))";
+    const string SQL_REPLACE = "REPLACE INTO {} ( Name, ID, Age, Sex, Height, Comments)\
+ values(:name,:id, :age, :sex, :height, :comments)";
+    const string SQL_SELECT = "SELECT * FROM {} WHERE `Sex`=:sex limit {}";
+
+}
+
+
+/*PersonMgr(soci::session &&se, std::string table = "Person") :
+_session(std::move(se)), _table(std::move(table))
+{
+static_assert(std::is_move_constructible<soci::session>::value, "hah");
+}*/
+
+void PersonMgr::CreateTable()
+{
+    try
+    {
+        wrt_lock_t wl(_shmt);
+        auto sql = fmt::format(SQL_CREATE, _table);
+        soci::session(*_ppool) << (sql);
+    }
+    catch (const std::exception& e)
+    {
+        spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
+    }
+}
+
+void PersonMgr::DropTable()
+{
+    try
+    {
+        wrt_lock_t wl(_shmt);
+        soci::session(*_ppool) << ("DROP TABLE IF EXISTS " + _table);
+        // _session << ("DROP TABLE 'Person'");
+    }
+    catch (const std::exception& e)
+    {
+        spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
+    }
+}
+
 // transaction ¡Ì prepare  ¡Ì  bulk ¡Á
 void PersonMgr::Put(const std::vector<Person>& others)
 {
@@ -17,8 +63,9 @@ void PersonMgr::Put(const std::vector<Person>& others)
         wrt_lock_t wl(_shmt);
         auto & _session = soci::session(*_ppool);
         soci::transaction tr(_session);
+        soci::blob comments(_session);
         soci::statement st = (_session.prepare << (sql), soci::use(name), soci::use(id),
-            soci::use(age), soci::use(sex), soci::use(height));
+            soci::use(age), soci::use(sex), soci::use(height), soci::use(comments));
         for (size_t i = 0; i < size; i++) {
             const auto & person = others.at(i);
             name = person.name();
@@ -26,6 +73,13 @@ void PersonMgr::Put(const std::vector<Person>& others)
             age = person.age();
             sex = person.sex() ? "M" : "F";
             height = person.height();
+            string msg(std::to_string(i));
+            if (i%2)
+            {
+                msg += "i love lyw";
+            }
+            comments.trim(0); // Çå¿Õ
+            comments.write(0, msg.c_str(), msg.length());
             st.execute(true);
             if ((i+1) % 100000 == 0)
             {

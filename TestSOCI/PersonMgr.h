@@ -40,12 +40,6 @@ private:
 
 class PersonMgr
 {
-
-private:
-    const string SQL_CREATE = "CREATE TABLE IF NOT EXISTS {} (\
-`Name` TEXT NOT NULL , `ID` TEXT NOT NULL UNIQUE, `Age` INTEGER,`Sex` TEXT, `Height` REAL NOT NULL, PRIMARY KEY(`ID`))";
-    const string SQL_REPLACE = "REPLACE INTO {} ( Name, ID, Age, Sex, Height) values(:name,:id, :age, :sex, :height)";
-    const string SQL_SELECT = "SELECT * FROM {} WHERE `Sex`=:sex limit {}";
 public:
     PersonMgr(std::shared_ptr<soci::connection_pool> ppool, std::string table = "Person"):
         _ppool(ppool), _table(std::move(table))
@@ -57,32 +51,8 @@ public:
     {
         static_assert(std::is_move_constructible<soci::session>::value, "hah");
     }*/
-    void CreateTable()
-    {
-        try
-        {
-            wrt_lock_t wl(_shmt);
-            auto sql = fmt::format(SQL_CREATE, _table);
-            soci::session(*_ppool) << (sql);
-        }
-        catch (const std::exception& e)
-        {
-            spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
-        }
-    }
-    void DropTable()
-    {
-        try
-        {
-            wrt_lock_t wl(_shmt);
-            soci::session(*_ppool) << ("DROP TABLE IF EXISTS " + _table);
-            // _session << ("DROP TABLE 'Person'");
-        }
-        catch (const std::exception& e)
-        {
-            spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
-        }
-    }
+    void CreateTable();
+    void DropTable();
     // transaction ¡Ì prepare  ¡Ì  bulk ¡Á
     void Put(const std::vector<Person> &);
     // transaction ¡Ì prepare  ¡Ì  bulk ¡Ì

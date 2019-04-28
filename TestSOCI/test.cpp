@@ -74,7 +74,7 @@ int main()
         mgr2.Put5(others, 100);*/
         vt.emplace_back([&mgr, &others] {
             TickTick tt;
-            mgr.Put5(others, 100);
+            mgr.Put(others);
         });
 
         // 若要保证数据一致性，需要自行加锁！
