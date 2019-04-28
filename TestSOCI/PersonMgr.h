@@ -43,7 +43,7 @@ class PersonMgr
 
 private:
     const string SQL_CREATE = "CREATE TABLE IF NOT EXISTS {} (\
-`Name` TEXT NOT NULL , `ID` TEXT NOT NULL UNIQUE, `Age` INTEGER,`Sex` TEXT, `Height` REAL, PRIMARY KEY(`ID`))";
+`Name` TEXT NOT NULL , `ID` TEXT NOT NULL UNIQUE, `Age` INTEGER,`Sex` TEXT, `Height` REAL NOT NULL, PRIMARY KEY(`ID`))";
     const string SQL_REPLACE = "REPLACE INTO {} ( Name, ID, Age, Sex, Height) values(:name,:id, :age, :sex, :height)";
     const string SQL_SELECT = "SELECT * FROM {} WHERE `Sex`=:sex limit {}";
 public:

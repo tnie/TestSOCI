@@ -100,10 +100,24 @@ std::vector<Person> PersonMgr::Get(bool female, unsigned limit)
         for (auto it = rs.begin(); it != rs.end(); ++it)
         {
             const soci::row& row = *it;
-#ifdef __PRINT_PROP_
+//#define  __PRINT_PROP_
+//#ifdef __PRINT_PROP_
             for (size_t i = 0; i < row.size(); i++)
             {
                 auto & props = row.get_properties(i);
+                if (props.get_name() == "Height")
+                {
+                    auto & sheight = row.get<std::string>(i);
+                    try
+                    {
+                        auto height = std::stod(sheight);
+                        cout << height << endl;
+                    }
+                    catch (const std::exception& e)
+                    {
+                        cerr << e.what() << endl;
+                    }
+                }
                 cout << '<' << props.get_name() << '>';
                 switch (props.get_data_type())
                 {
@@ -121,8 +135,10 @@ std::vector<Person> PersonMgr::Get(bool female, unsigned limit)
 
                 cout << "</" << props.get_name() << '>' << std::endl;
             }
+
+            cout << endl;
             std::this_thread::sleep_for(1s);
-#endif // __PRINT_PROP_
+//#endif // __PRINT_PROP_
             ps.push_back(Person(row.get<string>(string("Name"))));
 
             // WEIRD <Height>1.86[dt_string]</Height>

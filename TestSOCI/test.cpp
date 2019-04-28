@@ -19,7 +19,21 @@ vector<Person> data(size_t count)
         string name("N");
         name += std::to_string(i);
         auto height = static_cast<double>(dis3(random)) / 100.0;
-        others.emplace_back(name, uuid(), dis1(random), dis2(random), height);
+        switch (i)
+        {
+        case 0:
+            height = 100.0;
+            break;
+        case 1:
+            height = std::nan("");
+            break;
+        case 2:
+            height = std::nan("FeiShu!");
+            break;
+        default:
+            break;
+        }
+        others.emplace_back(name, uuid(), dis1(random), /*dis2(random)*/false, height);
         if ((i + 1) % 100000 == 0)
         {
             spdlog::info("已经生成 {} 条数据", i + 1);
@@ -30,7 +44,7 @@ vector<Person> data(size_t count)
 
 int main()
 {
-    const int _MAX_COUNT = 1000 * 50;
+    const int _MAX_COUNT = 1000/* * 50*/;
     auto others = data(_MAX_COUNT);
     const unsigned _POOL_SIZE = 50;
     auto ppool = std::make_shared<soci::connection_pool>(_POOL_SIZE);
@@ -51,28 +65,28 @@ int main()
     vector<thread> vt;
     //PersonMgr mgr(soci::session(pool)); // ERR
     PersonMgr mgr{ ppool };
-    PersonMgr mgr2{ ppool, "Student" };
+    //PersonMgr mgr2{ ppool, "Student" };
     {
         mgr.DropTable();
-        mgr2.DropTable();
         mgr.CreateTable();
+        /*mgr2.DropTable();
         mgr2.CreateTable();
-        mgr2.Put5(others, 100);
+        mgr2.Put5(others, 100);*/
         vt.emplace_back([&mgr, &others] {
             TickTick tt;
             mgr.Put5(others, 100);
         });
 
         // 若要保证数据一致性，需要自行加锁！
-        for (size_t i = 0; i < 50; i++)
-        {
-            vt.emplace_back([i, &mgr, &mgr2] {
-                //spdlog::info("===#{} {}", i, mgr.Get(true, 1000).size());
-                spdlog::info("===#{} {}", i, mgr2.Get(true, 1000).size());
-            });
-            this_thread::sleep_for(100ms);
+        //for (size_t i = 0; i < 50; i++)
+        //{
+        //    vt.emplace_back([i, &mgr, &mgr2] {
+        //        //spdlog::info("===#{} {}", i, mgr.Get(true, 1000).size());
+        //        spdlog::info("===#{} {}", i, mgr2.Get(true, 1000).size());
+        //    });
+        //    this_thread::sleep_for(100ms);
 
-        }
+        //}
     }
 
     getchar();
@@ -83,5 +97,6 @@ int main()
             vt.at(i).join();
         }
     }
+    mgr.Get(true, 1000);
     return 0;
 }
