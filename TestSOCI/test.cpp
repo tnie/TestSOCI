@@ -21,20 +21,7 @@ vector<Person> data(size_t count)
         string name("N");
         name += std::to_string(i);
         auto height = static_cast<double>(dis3(random)) / 100.0;
-        switch (i)
-        {
-        case 0:
-            height = 100.0;
-            break;
-        case 1:
-            height = std::nan("");
-            break;
-        case 2:
-            height = std::nan("FeiShu!");
-            break;
-        default:
-            break;
-        }
+        // it's not possible to store a NaN value in a FLOAT type columns in Mysql
         others.emplace_back(name, uuid(), dis1(random), /*dis2(random)*/false, height);
         if ((i + 1) % 100000 == 0)
         {
@@ -57,7 +44,7 @@ int main()
         {
             auto & local = ppool->at(i);
             //local.open(soci::sqlite3, u8R"(.\data\22#.db)");
-            local.open(soci::mysql, "db=test user=root password=''");
+            local.open(soci::mysql, "db=testdb user=root password=''");
         }
 
     }

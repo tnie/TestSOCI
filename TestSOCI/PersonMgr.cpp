@@ -6,11 +6,13 @@ using namespace std;
 
 namespace
 {
+    // MySQL can index only the first N chars of a BLOB or TEXT column.
+    // SOCI blob interface is not supported by the MySQL backend.
     const string SQL_CREATE = "CREATE TABLE IF NOT EXISTS {} (\
-`Name` TEXT NOT NULL , `ID` TEXT NOT NULL UNIQUE, `Age` INTEGER,`Sex` TEXT,\
- `Height` REAL NOT NULL, `Comments` BLOB,  PRIMARY KEY(`ID`))";
-    const string SQL_REPLACE = "REPLACE INTO {} ( Name, ID, Age, Sex, Height, Comments)\
- values(:name,:id, :age, :sex, :height, :comments)";
+`Name` TEXT NOT NULL , `ID` VARCHAR(100) NOT NULL UNIQUE, `Age` INTEGER,`Sex` TEXT,\
+ `Height` REAL NOT NULL,  PRIMARY KEY(`ID`))";
+    const string SQL_REPLACE = "REPLACE INTO {} ( Name, ID, Age, Sex, Height)\
+ values(:name,:id, :age, :sex, :height)";
     const string SQL_SELECT = "SELECT * FROM {} WHERE `Sex`=:sex limit {}";
 
 }
@@ -63,9 +65,8 @@ void PersonMgr::Put(const std::vector<Person>& others)
         wrt_lock_t wl(_shmt);
         auto & _session = soci::session(*_ppool);
         soci::transaction tr(_session);
-        soci::blob comments(_session);
         soci::statement st = (_session.prepare << (sql), soci::use(name), soci::use(id),
-            soci::use(age), soci::use(sex), soci::use(height), soci::use(comments));
+            soci::use(age), soci::use(sex), soci::use(height));
         for (size_t i = 0; i < size; i++) {
             const auto & person = others.at(i);
             name = person.name();
@@ -78,8 +79,6 @@ void PersonMgr::Put(const std::vector<Person>& others)
             {
                 msg += "i love lyw";
             }
-            comments.trim(0); // Çå¿Õ
-            comments.write(0, msg.c_str(), msg.length());
             st.execute(true);
             if ((i+1) % 100000 == 0)
             {
@@ -159,19 +158,6 @@ std::vector<Person> PersonMgr::Get(bool female, unsigned limit)
             for (size_t i = 0; i < row.size(); i++)
             {
                 auto & props = row.get_properties(i);
-                if (props.get_name() == "Height")
-                {
-                    auto & sheight = row.get<std::string>(i);
-                    try
-                    {
-                        auto height = std::stod(sheight);
-                        cout << height << endl;
-                    }
-                    catch (const std::exception& e)
-                    {
-                        cerr << e.what() << endl;
-                    }
-                }
                 cout << '<' << props.get_name() << '>';
                 switch (props.get_data_type())
                 {
