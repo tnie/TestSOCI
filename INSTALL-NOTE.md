@@ -36,6 +36,44 @@ cmake ../soci-3.2.3 -G "Visual Studio 14 2015" `
 
 解决方案：https://blog.csdn.net/A1367297309/article/details/52997312
 
+# 编译 mysql 后端
+
+	-DMYSQL_INCLUDE_DIR=E:\InstallSOCI\mysql\include -DMYSQL_LIBRARIES=E:\InstallSOCI\mysql\lib\vs14\mysqlclient.lib
+
+在编译 sqlite3 后端时，使用 libsqlite3**d**.lib/libsqlite3.lib 时编译命令 `cmake --build` 无区别。但编译 mysql，不区分就会报错，因为 mysql 的调试版本和发布版本存在冲突
+
+> 在 Debug 模式无法链接 Release 版本的 mysql 库。
+
+有的库两种模式兼容，但有的不行。
+
+```powershell
+## Release 版本
+cmake ../soci-3.2.3 -G "Visual Studio 14 2015" `
+-DWITH_BOOST=OFF -DWITH_ORACLE=OFF -DSOCI_EMPTY=OFF `
+-DSOCI_TESTS=OFF -DWITH_DB2=OFF -DWITH_FIREBIRD=OFF `
+-DWITH_MYSQL=ON -DWITH_ODBC=OFF -DWITH_POSTGRESQL=OFF `
+-DWITH_SQLITE3=ON -DCMAKE_INSTALL_PREFIX=E:\InstallSOCI\0627 `
+-DSQLITE3_INCLUDE_DIR=E:\InstallSOCI\sqlite3 -DSQLITE3_LIBRARY=E:\InstallSOCI\sqlite3/libsqlite3d.lib `
+-DMYSQL_INCLUDE_DIR=E:\InstallSOCI\mysql\include -DMYSQL_LIBRARIES=E:\InstallSOCI\mysql\lib\vs14\debug\mysqlclient.lib `
+-DCMAKE_DEBUG_POSTFIX="d"
+
+cmake --build . --target install
+```
+
+```powershell
+## Debug 版本
+cmake ../soci-3.2.3 -G "Visual Studio 14 2015" `
+-DWITH_BOOST=OFF -DWITH_ORACLE=OFF -DSOCI_EMPTY=OFF `
+-DSOCI_TESTS=OFF -DWITH_DB2=OFF -DWITH_FIREBIRD=OFF `
+-DWITH_MYSQL=ON -DWITH_ODBC=OFF -DWITH_POSTGRESQL=OFF `
+-DWITH_SQLITE3=ON -DCMAKE_INSTALL_PREFIX=E:\InstallSOCI\0627 `
+-DSQLITE3_INCLUDE_DIR=E:\InstallSOCI\sqlite3 -DSQLITE3_LIBRARY=E:\InstallSOCI\sqlite3/libsqlite3.lib `
+-DMYSQL_INCLUDE_DIR=E:\InstallSOCI\mysql\include -DMYSQL_LIBRARIES=E:\InstallSOCI\mysql\lib\vs14\mysqlclient.lib
+
+cmake --build . --target install --config Release
+```
+
+
 # 静态库
 
 开启 `SOCI_STATIC`，针对的是外围库。但 soci 核心依旧是动态库，可以 `-DSOCI_SHARED=OFF`

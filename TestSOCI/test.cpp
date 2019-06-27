@@ -1,6 +1,8 @@
 #include <thread>
 #include "PersonMgr.h"
-#include <soci/sqlite3/soci-sqlite3.h>
+//#include <soci/sqlite3/soci-sqlite3.h>
+#define _WINSOCKAPI_
+#include <soci/mysql/soci-mysql.h>
 #include "Utility.h"
 #include <random>
 
@@ -54,7 +56,8 @@ int main()
         for (size_t i = 0; i < _POOL_SIZE; i++)
         {
             auto & local = ppool->at(i);
-            local.open(soci::sqlite3, u8R"(.\data\22#.db)");
+            //local.open(soci::sqlite3, u8R"(.\data\22#.db)");
+            local.open(soci::mysql, "db=test user=root password=''");
         }
 
     }
