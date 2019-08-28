@@ -1,6 +1,7 @@
 #include "PersonMgr.h"
 #include <thread>
 #include <iostream>
+#include "soci-3.2.3/include/mysql/include/mysql.h"
 
 using namespace std;
 
@@ -64,7 +65,13 @@ void PersonMgr::Put(const std::vector<Person>& others)
         auto sql = fmt::format(SQL_REPLACE, _table);
         wrt_lock_t wl(_shmt);
         auto & _session = soci::session(*_ppool);
+        character_set_(_session);
+        /*_session << ("set character_set_client = utf8;");
+        _session << ("set character_set_connection = utf8;");
+        character_set_(_session);*/
+
         soci::transaction tr(_session);
+        //_session << ("SET NAMES UTF8;");
         soci::statement st = (_session.prepare << (sql), soci::use(name), soci::use(id),
             soci::use(age), soci::use(sex), soci::use(height));
         for (size_t i = 0; i < size; i++) {
@@ -149,12 +156,15 @@ std::vector<Person> PersonMgr::Get(bool female, unsigned limit)
         auto sql = fmt::format(SQL_SELECT, _table, limit);
         read_lock_t rl(_shmt);
         auto & _session = soci::session(*_ppool);
+        character_set_(_session);
+        /*_session << ("set character_set_results  = utf8;");
+        character_set_(_session);*/
         soci::rowset<soci::row> rs = (_session.prepare << (sql), soci::use(female ? 'F' : 'M'));
         for (auto it = rs.begin(); it != rs.end(); ++it)
         {
             const soci::row& row = *it;
-//#define  __PRINT_PROP_
-//#ifdef __PRINT_PROP_
+            //#define  __PRINT_PROP_
+            //#ifdef __PRINT_PROP_
             for (size_t i = 0; i < row.size(); i++)
             {
                 auto & props = row.get_properties(i);
@@ -162,8 +172,11 @@ std::vector<Person> PersonMgr::Get(bool female, unsigned limit)
                 switch (props.get_data_type())
                 {
                 case soci::dt_string:
-                    cout << row.get<std::string>(i) << "[dt_string]";
+                {
+                    auto tmp = row.get<std::string>(i);
+                    cout << tmp << "[dt_string]";
                     break;
+                }
                 case soci::dt_double:
                     cout << row.get<double>(i) << "[dt_double]";
                     break;
@@ -178,7 +191,7 @@ std::vector<Person> PersonMgr::Get(bool female, unsigned limit)
 
             cout << endl;
             std::this_thread::sleep_for(1s);
-//#endif // __PRINT_PROP_
+            //#endif // __PRINT_PROP_
             ps.push_back(Person(row.get<string>(string("Name"))));
 
             // WEIRD <Height>1.86[dt_string]</Height>
@@ -196,4 +209,48 @@ std::vector<Person> PersonMgr::Get(bool female, unsigned limit)
     return ps;
 }
 
+void PersonMgr::character_set_(soci::session& _session)
+{
+    try
+    {
+        soci::rowset<soci::row> rs = (_session.prepare << ("show variables like '%character%';"));
+        for (auto it = rs.begin(); it != rs.end(); ++it)
+        {
+            const soci::row& row = *it;
+            for (size_t i = 0; i < row.size(); i++)
+            {
+                auto & props = row.get_properties(i);
+                cout << '<' << props.get_name() << '>';
+                switch (props.get_data_type())
+                {
+                case soci::dt_string:
+                {
+                    auto tmp = row.get<std::string>(i);
+                    cout << tmp ;
+                    break;
+                }
+                case soci::dt_double:
+                    cout << row.get<double>(i) << "[dt_double]";
+                    break;
+                case soci::dt_date:
+                    std::tm when = row.get<std::tm>(i);
+                    cout << when.tm_year;
+                    break;
+                }
+
+                cout << "</" << props.get_name() << '>' << std::endl;
+            }
+
+            cout << endl;
+        }
+    }
+    catch (soci::soci_error const &e)
+    {
+        spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
+    }
+    catch (const std::exception& e)
+    {
+        spdlog::error("{} {}:{}", e.what(), __FUNCTION__, __LINE__);
+    }
+}
 

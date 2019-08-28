@@ -18,7 +18,7 @@ vector<Person> data(size_t count)
     std::uniform_int_distribution<int> dis3(70, 200);
     for (size_t i = 0; i < count; i++)
     {
-        string name("N");
+        string name(u8"ÄôÁú");
         name += std::to_string(i);
         auto height = static_cast<double>(dis3(random)) / 100.0;
         // it's not possible to store a NaN value in a FLOAT type columns in Mysql

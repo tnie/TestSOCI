@@ -59,6 +59,8 @@ public:
     void Put5(const std::vector<Person> &, size_t BULK_SIZE = 50);
 
     std::vector<Person> Get(bool female, unsigned limit = 3);
+    // https://github.com/tnie/StockDataLayer/issues/171
+    void character_set_(soci::session& _session);
 
     typedef std::unique_lock<std::shared_mutex> wrt_lock_t;
     typedef std::shared_lock<std::shared_mutex> read_lock_t;
