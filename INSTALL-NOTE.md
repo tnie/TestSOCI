@@ -47,7 +47,7 @@ cmake ../soci-3.2.3 -G "Visual Studio 14 2015" `
 有的库两种模式兼容，但有的不行。
 
 ```powershell
-## Release 版本
+## Debug 版本
 cmake ../soci-3.2.3 -G "Visual Studio 14 2015" `
 -DWITH_BOOST=OFF -DWITH_ORACLE=OFF -DSOCI_EMPTY=OFF `
 -DSOCI_TESTS=OFF -DWITH_DB2=OFF -DWITH_FIREBIRD=OFF `
@@ -61,7 +61,7 @@ cmake --build . --target install
 ```
 
 ```powershell
-## Debug 版本
+## Release 版本
 cmake ../soci-3.2.3 -G "Visual Studio 14 2015" `
 -DWITH_BOOST=OFF -DWITH_ORACLE=OFF -DSOCI_EMPTY=OFF `
 -DSOCI_TESTS=OFF -DWITH_DB2=OFF -DWITH_FIREBIRD=OFF `
