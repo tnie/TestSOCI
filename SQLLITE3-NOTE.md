@@ -35,6 +35,12 @@ https://stackoverflow.com/questions/10325683/can-i-read-and-write-to-a-sqlite-da
 
 [sqlite 并发访问](http://blog.51cto.com/linzimo777/1544202)
 
+# UTF8 编码
+
+> The default encoding will be **UTF-8** for databases created using `sqlite3_open()` or `sqlite3_open_v2()`. The default encoding for databases created using `sqlite3_open16()` will be **UTF-16** in the native byte order. [引用来源][1]
+
+[1]:https://www.sqlite.org/search?q=encoding&i=1
+
 [1]:https://github.com/tnie/StockDataLayer/issues/41
 [2]:https://www.sqlite.org/datatype3.html
 [3]:http://www.runoob.com/sqlite/sqlite-data-types.html
